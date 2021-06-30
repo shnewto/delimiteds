@@ -1,0 +1,11 @@
+target
+
+*.class
+*.log
+
+.scalafmt.conf
+
+.bloop/
+project/target
+project/project
+
