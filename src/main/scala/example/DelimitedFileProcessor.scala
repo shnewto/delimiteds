@@ -1,5 +1,6 @@
 package example
 
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -7,14 +8,20 @@ import scala.collection.immutable.HashMap
 
 object DelimitedFileProcessor extends HasSparkSession with App {
 
-  def process(path : String, optionMap: HashMap[String, String]): DataFrame = {
+  def process(path : String, schema: StructType, optionMap: Map[String, String]): DataFrame = {
+
+    var constantOptions = Map(
+      "columnNameOfCorruptRecord" -> "corrupt_record"
+    )
+
     sparkSession.read
-      .options(optionMap)
+      .schema(schema.add("corrupt_record", "String"))
+      .options(constantOptions ++ optionMap)
       .format("csv")
       .load(path)
   }
 
-  process("county-list.csv", new HashMap)
+  process("county-list.csv",  new StructType, new HashMap)
 }
 
 trait HasSparkSession {
