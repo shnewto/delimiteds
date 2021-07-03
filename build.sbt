@@ -10,6 +10,7 @@ lazy val root = (project in file("."))
     name := "delimiteds",
     libraryDependencies ++= Seq(
       scalaTest % Test,
+      "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
       "org.apache.spark" %% "spark-sql" % "3.1.2"
     )
   )
