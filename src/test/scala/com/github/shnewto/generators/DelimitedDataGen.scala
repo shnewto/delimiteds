@@ -4,16 +4,32 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import java.io.{File, FileWriter}
 import java.util.UUID
+import scala.collection.mutable
+import scala.util.Random
 
 object DelimitedDataGen {
 
   def nonEmptyUnicodeString(delimiter: String): Gen[String] = Arbitrary.arbString.arbitrary.suchThat(i => !i.isEmpty && i != delimiter)
+
+  def nonEmptyUnicodeStringWithNewlines(delimiter: String): Gen[String] = Gen.oneOf(
+    arbitraryStringWithNewlines(new scala.util.Random, delimiter),
+    nonEmptyUnicodeString(delimiter))
+
+  def arbitraryStringWithNewlines(r: scala.util.Random, delimiter: String): Gen[String] = {
+    Arbitrary.arbString.arbitrary.suchThat(i => !i.isEmpty && i != delimiter).flatMap(s => {
+    if (r.nextInt() % 5 == 0) s + "\n" else s
+    })
+  }
 
   def intInRange(min: Int, max: Int): Gen[Int] = Gen.choose(min, max)
 
   def nonEmptyListOfyUnicodeStrings(n: Int, delimiter: String): Gen[List[String]] = Gen.containerOfN[List, String](n, nonEmptyUnicodeString(delimiter))
 
   def nonEmptyListOfNonEmptyListOfyUnicodeStrings(n: Int, m: Int, delimiter: String): Gen[List[List[String]]] = Gen.containerOfN[List, List[String]](n, nonEmptyListOfyUnicodeStrings(m, delimiter))
+
+  def nonEmptyListOfyUnicodeStringsWithNewlines(n: Int, delimiter: String): Gen[List[String]] = Gen.containerOfN[List, String](n, nonEmptyUnicodeStringWithNewlines(delimiter))
+
+  def nonEmptyListOfNonEmptyListOfyUnicodeStringsWithNewlines(n: Int, m: Int, delimiter: String): Gen[List[List[String]]] = Gen.containerOfN[List, List[String]](n, nonEmptyListOfyUnicodeStringsWithNewlines(m, delimiter))
 
 
   def createFileFromInputAndReturnPath(inputString: String): String = {
@@ -34,7 +50,7 @@ object DelimitedDataGen {
 
   def makeInput(header: List[String], data: List[List[String]], columnDelimiter: String, rowDelimiter: String): (String, Int, Int) = {
 
-    val distinct = header.foldLeft(List[String]())( (d, v) => {
+    val distinct = header.foldLeft(List[String]())((d, v) => {
       if (d.contains(v)) d ++ List(v + UUID.randomUUID()) else d ++ List(v)
     })
 
