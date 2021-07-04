@@ -3,6 +3,7 @@ package com.github.shnewto.generators
 import org.scalacheck.{Arbitrary, Gen}
 
 import java.io.{File, FileWriter}
+import java.util.UUID
 
 object DelimitedDataGen {
 
@@ -32,31 +33,25 @@ object DelimitedDataGen {
   }
 
   def makeInput(header: List[String], data: List[List[String]], columnDelimiter: String, rowDelimiter: String): (String, Int, Int) = {
-    var distinct: List[String] = List()
 
-    header.foreach({ v =>
-      val pad = "_"
-      var updated = v
-      while (distinct.contains(updated)) {
-        updated += pad
-      }
-      distinct ++= List(updated)
+    val distinct = header.foldLeft(List[String]())( (d, v) => {
+      if (d.contains(v)) d ++ List(v + UUID.randomUUID()) else d ++ List(v)
     })
-
 
     val columnCount = distinct.size
-    var expectedCorruptRecordCount = 0
-    var expectedGoodRecordCount = 0
-    val rows = data.map(r => {
-      if (r.size == columnCount) {
-        expectedGoodRecordCount += 1
-      } else {
-        expectedCorruptRecordCount += 1
-      }
-      r.mkString(columnDelimiter)
+
+    val recordQualityCount: RecordQualityCount = data.foldLeft(RecordQualityCount(0, 0))((counts, r) => {
+      RecordQualityCount(
+        if (r.size == columnCount) counts.goodRecordCount + 1 else counts.goodRecordCount, // good record
+        if (r.size != columnCount) counts.corruptRecordCount + 1 else counts.corruptRecordCount, // corrupt records
+      )
     })
 
+    val rows = data.map(r => r.mkString(columnDelimiter))
+
     val input = String.format("%s%s%s", distinct.mkString(columnDelimiter), rowDelimiter, rows.mkString(rowDelimiter));
-    (input, expectedGoodRecordCount, expectedCorruptRecordCount)
+    (input, recordQualityCount.goodRecordCount, recordQualityCount.corruptRecordCount)
   }
 }
+
+case class RecordQualityCount(goodRecordCount: Int, corruptRecordCount: Int)
