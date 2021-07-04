@@ -47,7 +47,9 @@ object DelimitedDataGen {
       )
     })
 
-    val rows = data.map(r => r.mkString(columnDelimiter))
+    val rows = data.map(r =>
+      r.mkString(columnDelimiter)
+    )
 
     val input = String.format("%s%s%s", distinct.mkString(columnDelimiter), rowDelimiter, rows.mkString(rowDelimiter));
     (input, recordQualityCount.goodRecordCount, recordQualityCount.corruptRecordCount)
