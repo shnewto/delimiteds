@@ -9,13 +9,11 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 import scala.collection.immutable.HashMap
 
-class DelimitedFileProcessorSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
+class CommaDelimitedWithDataFrameReaderDefaults extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
   val columnDelimiter = ","
   val rowDelimiter = "\n"
 
   val optionMap = HashMap(
-    "header" -> "true",
-    "enforceSchema" -> "true",
     "sep" -> columnDelimiter)
 
   "When given a known good input the DelimitedFileProcessor" should "use default read values to return a DataFrame that correctly represents the input" in {
