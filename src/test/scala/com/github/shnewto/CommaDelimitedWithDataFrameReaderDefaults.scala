@@ -56,15 +56,13 @@ class CommaDelimitedWithDataFrameReaderDefaults extends AnyFlatSpec with Matcher
 
   "When given unknown quality input, a known character set, and DataFrameReader defaults" should "register only rows of unexpected length as corrupt records" in {
     forAll(intInRange(4, 100), intInRange(1, 500)) { (columnCount: Int, rowCount: Int) =>
-      whenever(columnCount > 0 && rowCount > 0) {
-        forAll(nonEmptyListOfyUnicodeStrings(columnCount, columnDelimiter), nonEmptyListOfNonEmptyListOfyUnicodeStrings(rowCount, columnCount, columnDelimiter)) { (header: List[String], data: List[List[String]]) =>
+        forAll(nonEmptyListOfyUnicodeStrings(columnCount, columnDelimiter), nonEmptyListOfNonEmptyListOfyUnicodeStrings(columnCount, rowCount, columnDelimiter)) { (header: List[String], data: List[List[String]]) =>
           val (res, inputSchema, expectedGoodRecordCount, expectedCorruptRecordCount) = doProcess(header, data, columnDelimiter, rowDelimiter)
 
           inputSchema.toList == res.schema.take(inputSchema.size)
           expectedGoodRecordCount == goodRecordCount(res)
           expectedCorruptRecordCount == corruptRecordCount(res)
         }
-      }
     }
   }
 

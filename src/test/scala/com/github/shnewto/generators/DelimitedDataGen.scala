@@ -1,6 +1,7 @@
 package com.github.shnewto.generators
 
 import org.scalacheck.{Arbitrary, Gen}
+
 import java.io.{File, FileWriter}
 
 object DelimitedDataGen {
@@ -15,11 +16,7 @@ object DelimitedDataGen {
 
 
   def createFileFromInputAndReturnPath(inputString: String): String = {
-
-    // somtimes it's fun to look at the generated files instead of disappearing them :)
-    // val inputFile = new File(String.format("%sdata-%s.txt", "/tmp/gen/", UUID.randomUUID().toString()))
-
-    val inputFile = File.createTempFile("data-", ".txt")
+    val inputFile = File.createTempFile("unicode-", ".txt")
 
     val fileWriter = new FileWriter(new File(inputFile.getAbsolutePath))
     fileWriter.write(inputString)
