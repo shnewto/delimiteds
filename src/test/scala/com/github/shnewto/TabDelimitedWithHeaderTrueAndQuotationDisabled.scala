@@ -52,20 +52,18 @@ class TabDelimitedWithHeaderTrueAndQuotationDisabled extends AnyFlatSpec with Ma
     dataFrames.assertions(header, data, sep, lineSep)
   }
 
-  "When TabDelimitedWithHeaderTrueAndQuotationDisabled fail case" should "find reason and fix" in {
-    // not sure why this one failed before, or what changed since then ... ?
-    val (header, data) = dataFrames.makeInputFromFilePath("fail-cases/TabDelimitedWithHeaderTrueAndQuotationDisabled/unicode-15352673240399877164.txt", sep, lineSep)
-    dataFrames.assertions(header, data, sep, lineSep)
-  }
+//  Could def make this a cleaner than comment/uncomment to debug
+//  "When TabDelimitedWithHeaderTrueAndQuotationDisabled fail case" should "find reason and fix" in {
+//    val (header, data) = dataFrames.makeInputFromFilePath("fail-cases/TabDelimitedWithHeaderTrueAndQuotationDisabled/unicode-15352673240399877164.txt", sep, lineSep)
+//    dataFrames.assertions(header, data, sep, lineSep)
+//  }
 
   implicit val noShrinkA: Shrink[List[String]] = Shrink.shrinkAny
   implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny
 
   "When header true and quotes disabled and an unknown input" should "register only rows of unexpected length as corrupt records" in {
-    forAll(nonEmptyListOfyUnicodeStrings(sep), nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(sep)) { (header: List[String], data: List[List[String]]) =>
-      whenever (!header.isEmpty && !data.isEmpty) {
+    forAll(nonEmptyListOfyUnicodeStrings(sep, lineSep), nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(sep, lineSep)) { (header: List[String], data: List[List[String]]) =>
         dataFrames.assertions(header, data, sep, lineSep)
-      }
     }
   }
 }

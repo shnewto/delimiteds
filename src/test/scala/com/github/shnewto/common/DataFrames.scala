@@ -10,17 +10,18 @@ import java.util.UUID
 import scala.collection.immutable.HashMap
 
 class DataFrames(optionMap: HashMap[String, String]) {
-  def doProcess(header: List[String], data: List[List[String]], columnDelimiter: String, rowDelimiter: String): (DataFrame, Int, Int, String) = {
-    val (input, expectedGoodRecordCount, expectedCorruptRecordCount) = makeInput(header, data, columnDelimiter, rowDelimiter)
+  def doProcess(header: List[String], data: List[List[String]], sep: String, lineSep: String): (DataFrame, Int, Int, String) = {
+    val (input, expectedGoodRecordCount, expectedCorruptRecordCount) = makeInput(header, data, sep, lineSep)
     val inputPath = createFileFromInputAndReturnPath(input)
     val res = DelimitedFileProcessor.process(inputPath, optionMap)
-    (res.cache(), expectedGoodRecordCount, expectedCorruptRecordCount, inputPath)
+    saveResults(inputPath, header, data, sep, lineSep)
+    (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath)
   }
 
   def makeInputFromFilePath(inputPath: String, sep: String, lineSep: String): (List[String], List[List[String]]) = {
     val path = Paths.get(inputPath)
     val inputString = new String(Files.readAllBytes(path), StandardCharsets.UTF_8)
-    val inputList: List[List[String]] = inputString.split(lineSep).map(r=> r.split(sep).toList).toList
+    val inputList: List[List[String]] = inputString.split(lineSep).map(r => r.split(sep).toList).toList
     val header: List[String] = inputList.head.dropRight(1)
     val data = inputList.tail
     (header, data)
@@ -34,12 +35,12 @@ class DataFrames(optionMap: HashMap[String, String]) {
     df.select("*").where("_corrupt_record is not null").count().toInt
   }
 
-  def assertions(header: List[String], data: List[List[String]], columnDelimiter: String, rowDelimiter: String): Unit = {
-    val (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath) = doProcess(header, data, columnDelimiter, rowDelimiter)
-    res.collectAsList().size() shouldEqual data.size
+  def assertions(header: List[String], data: List[List[String]], sep: String, lineSep: String): Unit = {
+    val (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath) = doProcess(header, data, sep, lineSep)
+    res.cache().collectAsList().size() shouldEqual data.size
     expectedGoodRecordCount shouldEqual goodRecordCount(res)
     expectedCorruptRecordCount shouldEqual corruptRecordCount(res)
-//    Files.deleteIfExists(Paths.get(inputPath))
+        Files.deleteIfExists(Paths.get(inputPath))
   }
 
   def createFileFromInputAndReturnPath(inputString: String): String = {
@@ -55,7 +56,7 @@ class DataFrames(optionMap: HashMap[String, String]) {
     input.split("\n").take(1).mkString("")
   }
 
-  def makeInput(header: List[String], data: List[List[String]], columnDelimiter: String, rowDelimiter: String): (String, Int, Int) = {
+  def makeInput(header: List[String], data: List[List[String]], sep: String, lineSep: String): (String, Int, Int) = {
     val distinct = header.foldLeft(List[String]())((d, v) => {
       if (d.contains(v)) d ++ List(v + UUID.randomUUID()) else d ++ List(v)
     })
@@ -70,11 +71,27 @@ class DataFrames(optionMap: HashMap[String, String]) {
     })
 
     val rows = data.map(r =>
-      r.mkString(columnDelimiter)
+      r.mkString(sep)
     )
 
-    val input = String.format("%s%s%s", (distinct ++ List("_corrupt_record")).mkString(columnDelimiter), rowDelimiter, rows.mkString(rowDelimiter));
+    val input = String.format("%s%s%s", (distinct ++ List("_corrupt_record")).mkString(sep), lineSep, rows.mkString(lineSep));
     (input, recordQualityCount.goodRecordCount, recordQualityCount.corruptRecordCount)
+  }
+
+  def saveResults(inputPath: String, header: List[String], data: List[List[String]], sep: String, lineSep: String) {
+    val fname = inputPath.split("/").last.split("\\.").dropRight(1).mkString
+    val dirname = "/tmp/saved/" + fname
+
+    val dirPath = Paths.get(dirname)
+    val headerFilePath = Paths.get(dirname + "/header.txt")
+    val dataFilePath = Paths.get(dirname + "/data.txt")
+
+    Files.createDirectories(dirPath)
+    val headerFile = Files.createFile(headerFilePath)
+    val dataFile = Files.createFile(dataFilePath)
+
+    Files.write(headerFile, header.mkString(sep).getBytes(StandardCharsets.UTF_8))
+    Files.write(dataFile, data.map(r => r.mkString(sep)).mkString(lineSep).getBytes(StandardCharsets.UTF_8))
   }
 }
 

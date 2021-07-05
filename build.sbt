@@ -7,7 +7,6 @@ ThisBuild / organizationName := "example"
 
 lazy val root = (project in file("."))
   .settings(
-    scalacOptions += "-target:jvm-1.8",
     name := "delimiteds",
     libraryDependencies ++= Seq(
       scalaTest % Test,

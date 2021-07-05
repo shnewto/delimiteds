@@ -2,58 +2,63 @@ package com.github.shnewto.generators
 
 import org.scalacheck.{Arbitrary, Gen}
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.util.UUID
 import scala.util.Random
 
 object DelimitedDataGen {
 
-  val genMin = 1
-  val genMax = 20
+  val genMin = 2
+  val genMax = 100
 
-  def nonEmptyUnicodeString(delimiter: String): Gen[String] = Gen.chooseNum(genMin, genMax)
+  def nonEmptyUnicodeString(sep: String, lineSep: String): Gen[String] = nonEmptyUnicodeStringExcludingSepAndLineSep(sep, lineSep)
+
+  // need to make this take a list of chars to exclude from input so we don't need to make specific
+  // case generators like nonEmptyUnicodeStringExcludingSepAndQuotes below
+  def nonEmptyUnicodeStringExcludingSepAndLineSep(sep: String, lineSep: String): Gen[String] = Gen.chooseNum(genMin, genMax)
     .flatMap { n =>
-      Gen.buildableOfN[String, Char](n, Arbitrary.arbitrary[Char]).suchThat(i => !i.isEmpty && i != delimiter)
+      Gen.buildableOfN[String, Char](n, Arbitrary.arbitrary[Char]).suchThat(i => !i.isEmpty && !i.contains(sep) && !i.contains(lineSep))
     }
 
-  def nonEmptyUnicodeStringWithNewlines(delimiter: String): Gen[String] =
-    nonEmptyUnicodeString(delimiter).map(s => "\"" + Random.shuffle((s + "\n\n").toSeq).mkString + "\"")
+  def nonEmptyUnicodeStringExcludingSepAndQuotes(sep: String): Gen[String] = Gen.chooseNum(genMin, genMax)
+    .flatMap { n =>
+      Gen.buildableOfN[String, Char](n, Arbitrary.arbitrary[Char]).suchThat(i => !i.isEmpty && !i.contains(sep) && !i.contains("\""))
+    }
 
-  def nonEmptyUnicodeStringWithIrregularQuotations(delimiter: String): Gen[String] =
-    nonEmptyUnicodeString(delimiter).map(s => Random.shuffle((s + "\"").toSeq).mkString)
+  def nonEmptyUnicodeStringWithNewlines(sep: String, lineSep: String): Gen[String] =
+    nonEmptyUnicodeStringExcludingSepAndQuotes(sep).map(s =>  "\"" + Random.shuffle((s + "\n\n").toSeq).mkString + "\"")
+
+  def nonEmptyUnicodeStringWithIrregularQuotations(sep: String, lineSep: String): Gen[String] =
+    nonEmptyUnicodeString(sep, lineSep).map(s => Random.shuffle((s + "\"").toSeq).mkString)
 
   def dataSize = Gen.chooseNum(genMin, genMax)
 
-  def nonEmptyListOfyUnicodeStrings(delimiter: String): Gen[List[String]] = Gen.chooseNum(genMin, genMax)
+  def nonEmptyListOfyUnicodeStrings(sep: String, lineSep: String): Gen[List[String]] = Gen.chooseNum(genMin, genMax)
     .flatMap { n =>
-      Gen.buildableOfN[ List[String], String ](n, nonEmptyUnicodeString(delimiter))
+      Gen.buildableOfN[List[String], String](n, nonEmptyUnicodeString(sep, lineSep))
     }
 
-  def nonEmptyListOfyUnicodeStringsWithNewlines(delimiter: String) = Gen.chooseNum(genMin, genMax)
+  def nonEmptyListOfyUnicodeStringsWithNewlines(sep: String, lineSep: String) = Gen.chooseNum(genMin, genMax)
     .flatMap { n =>
-      Gen.buildableOfN[ List[String], String ](n, nonEmptyUnicodeStringWithNewlines(delimiter))
+      Gen.buildableOfN[List[String], String](n, nonEmptyUnicodeStringWithNewlines(sep, lineSep))
     }
 
-  def nonEmptyListOfyUnicodeStringsWithIrregularQuotations(delimiter: String) = Gen.chooseNum(genMin, genMax)
+  def nonEmptyListOfyUnicodeStringsWithIrregularQuotations(sep: String, lineSep: String) = Gen.chooseNum(genMin, genMax)
     .flatMap { n =>
-      Gen.buildableOfN[ List[String], String ](n, nonEmptyUnicodeStringWithIrregularQuotations(delimiter))
+      Gen.buildableOfN[List[String], String](n, nonEmptyUnicodeStringWithIrregularQuotations(sep, lineSep))
     }
 
-
-  def nonEmptyListOfNonEmptyListsOfyUnicodeStrings(delimiter: String) = Gen.chooseNum(genMin, genMax)
+  def nonEmptyListOfNonEmptyListsOfyUnicodeStrings(sep: String, lineSep: String) = Gen.chooseNum(genMin, genMax)
     .flatMap { n =>
-      Gen.buildableOfN[ List[List[String]], List[String] ](n, nonEmptyListOfyUnicodeStrings(delimiter))
+      Gen.buildableOfN[List[List[String]], List[String]](n, nonEmptyListOfyUnicodeStrings(sep, lineSep))
     }
 
-  def nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(delimiter: String) = Gen.chooseNum(genMin, genMax)
+  def nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(sep: String, lineSep: String) = Gen.chooseNum(genMin, genMax)
     .flatMap { n =>
-      Gen.buildableOfN[ List[List[String]], List[String] ](n, nonEmptyListOfyUnicodeStringsWithNewlines(delimiter))
+      Gen.buildableOfN[List[List[String]], List[String]](n, nonEmptyListOfyUnicodeStringsWithNewlines(sep, lineSep))
     }
 
-  def nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(delimiter: String) = Gen.chooseNum(genMin, genMax)
+  def nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(sep: String, lineSep: String) = Gen.chooseNum(genMin, genMax)
     .flatMap { n =>
-      Gen.buildableOfN[ List[List[String]], List[String] ](n, nonEmptyListOfyUnicodeStringsWithIrregularQuotations(delimiter))
+      Gen.buildableOfN[List[List[String]], List[String]](n, nonEmptyListOfyUnicodeStringsWithIrregularQuotations(sep, lineSep))
     }
 }
 

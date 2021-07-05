@@ -16,6 +16,7 @@ class TabDelimitedWithHeaderTrueAndMultiLineEnabled extends AnyFlatSpec with Mat
   val optionMap = HashMap(
     "multiLine" -> "true",
     "header" -> "true",
+    "escape" -> "\"",
     "lineSep" -> lineSep,
     "sep" -> sep)
 
@@ -55,7 +56,7 @@ class TabDelimitedWithHeaderTrueAndMultiLineEnabled extends AnyFlatSpec with Mat
   implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny
 
   "When header true and multiline enabled and an unknown input" should "register only rows of unexpected length as corrupt records" in {
-    forAll(nonEmptyListOfyUnicodeStrings(sep), nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(sep)) { (header: List[String], data: List[List[String]]) =>
+    forAll(nonEmptyListOfyUnicodeStrings(sep, lineSep), nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(sep, lineSep)) { (header: List[String], data: List[List[String]]) =>
       dataFrames.assertions(header, data, sep, lineSep)
     }
   }
