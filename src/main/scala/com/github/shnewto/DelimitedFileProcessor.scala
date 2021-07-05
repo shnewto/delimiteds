@@ -1,8 +1,7 @@
 package com.github.shnewto
 
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.immutable.HashMap
 

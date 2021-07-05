@@ -1,7 +1,8 @@
 package com.github.shnewto
 
 import com.github.shnewto.common.DataFrames
-import com.github.shnewto.generators.DelimitedDataGen.{dataSize, nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines, nonEmptyListOfyUnicodeStrings}
+import com.github.shnewto.generators.DelimitedDataGen.{nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines, nonEmptyListOfyUnicodeStrings}
+import org.scalacheck.Shrink
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -9,13 +10,14 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scala.collection.immutable.HashMap
 
 class TabDelimitedWithHeaderTrueAndMultiLineEnabled extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
-  val columnDelimiter = "\t"
-  val rowDelimiter = "\n"
+  val sep = "\t"
+  val lineSep = "\n"
 
   val optionMap = HashMap(
     "multiLine" -> "true",
     "header" -> "true",
-    "sep" -> columnDelimiter)
+    "lineSep" -> lineSep,
+    "sep" -> sep)
 
   val dataFrames: DataFrames = new DataFrames(optionMap)
 
@@ -29,10 +31,7 @@ class TabDelimitedWithHeaderTrueAndMultiLineEnabled extends AnyFlatSpec with Mat
       goodRecordTwo
     )
 
-    val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-    res.collectAsList().size() shouldEqual data.size
-    expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-    expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    dataFrames.assertions(header, data, sep, lineSep)
   }
 
   "When header true and multiline enabled and a known corrupt input" should "register only rows of unexpected length as corrupt records" in {
@@ -49,18 +48,15 @@ class TabDelimitedWithHeaderTrueAndMultiLineEnabled extends AnyFlatSpec with Mat
       goodRecordThree
     )
 
-    val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-    res.collectAsList().size() shouldEqual data.size
-    expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-    expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    dataFrames.assertions(header, data, sep, lineSep)
   }
 
+  implicit val noShrinkA: Shrink[List[String]] = Shrink.shrinkAny
+  implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny
+
   "When header true and multiline enabled and an unknown input" should "register only rows of unexpected length as corrupt records" in {
-    forAll(nonEmptyListOfyUnicodeStrings(columnDelimiter), nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(columnDelimiter)) { (header: List[String], data: List[List[String]]) =>
-      val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-      res.collectAsList().size() shouldEqual data.size
-      expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-      expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    forAll(nonEmptyListOfyUnicodeStrings(sep), nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(sep)) { (header: List[String], data: List[List[String]]) =>
+      dataFrames.assertions(header, data, sep, lineSep)
     }
   }
 }

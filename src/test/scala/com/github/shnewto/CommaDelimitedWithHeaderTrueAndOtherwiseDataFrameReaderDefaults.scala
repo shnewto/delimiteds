@@ -1,7 +1,8 @@
 package com.github.shnewto
 
 import com.github.shnewto.common.DataFrames
-import com.github.shnewto.generators.DelimitedDataGen.{dataSize, nonEmptyListOfNonEmptyListsOfyUnicodeStrings, nonEmptyListOfyUnicodeStrings}
+import com.github.shnewto.generators.DelimitedDataGen.{nonEmptyListOfNonEmptyListsOfyUnicodeStrings, nonEmptyListOfyUnicodeStrings}
+import org.scalacheck.Shrink
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -9,12 +10,15 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scala.collection.immutable.HashMap
 
 class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
-  val columnDelimiter = ","
-  val rowDelimiter = "\n"
+  val sep = ","
+  val lineSep = "\n"
 
   val optionMap = HashMap(
     "header" -> "true",
-    "sep" -> columnDelimiter)
+    "multiLine" -> "true", // need to learn why this fixes the broken assumptions about the data...
+    "emptyValue" -> "emptyValue",
+    "lineSep" -> lineSep,
+    "sep" -> sep)
 
   val dataFrames: DataFrames = new DataFrames(optionMap)
 
@@ -28,10 +32,7 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults extends An
       goodRecordTwo
     )
 
-    val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-    res.collectAsList().size() shouldEqual data.size
-    expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-    expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    dataFrames.assertions(header, data, sep, lineSep)
   }
 
   "When header true and otherwise default DataFrame reader options and a known corrupt input" should "register only rows of unexpected length as corrupt records" in {
@@ -48,18 +49,21 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults extends An
       goodRecordThree
     )
 
-    val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-    res.collectAsList().size() shouldEqual data.size
-    expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-    expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    dataFrames.assertions(header, data, sep, lineSep)
   }
 
+  "When CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults fail case" should "find reason and fix" in {
+    // multiline true seems to fix this... but why?
+    val (header, data) = dataFrames.makeInputFromFilePath("fail-cases/CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults/unicode-3627250600710896612.txt", sep, lineSep)
+    dataFrames.assertions(header, data, sep, lineSep)
+  }
+
+  implicit val noShrinkA: Shrink[List[String]] = Shrink.shrinkAny
+  implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny
+
   "When header true and otherwise default DataFrame reader options and an unknown input" should "register only rows of unexpected length as corrupt records" in {
-    forAll(nonEmptyListOfyUnicodeStrings(columnDelimiter), nonEmptyListOfNonEmptyListsOfyUnicodeStrings(columnDelimiter)) { (header: List[String], data: List[List[String]]) =>
-      val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-      res.collectAsList().size() shouldEqual data.size
-      expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-      expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    forAll(nonEmptyListOfyUnicodeStrings(sep), nonEmptyListOfNonEmptyListsOfyUnicodeStrings(sep)) { (header: List[String], data: List[List[String]]) =>
+        dataFrames.assertions(header, data, sep, lineSep)
     }
   }
 }

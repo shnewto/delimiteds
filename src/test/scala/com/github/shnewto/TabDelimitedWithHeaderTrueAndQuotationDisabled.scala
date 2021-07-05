@@ -1,7 +1,8 @@
 package com.github.shnewto
 
 import com.github.shnewto.common.DataFrames
-import com.github.shnewto.generators.DelimitedDataGen.{dataSize, nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations, nonEmptyListOfyUnicodeStrings}
+import com.github.shnewto.generators.DelimitedDataGen.{nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations, nonEmptyListOfyUnicodeStrings}
+import org.scalacheck.Shrink
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
@@ -9,13 +10,14 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scala.collection.immutable.HashMap
 
 class TabDelimitedWithHeaderTrueAndQuotationDisabled extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
-  val columnDelimiter = "\t"
-  val rowDelimiter = "\n"
+  val sep = "\t"
+  val lineSep = "\n"
 
   val optionMap = HashMap(
     "quote" -> "",
     "header" -> "true",
-    "sep" -> columnDelimiter)
+    "lineSep" -> lineSep,
+    "sep" -> sep)
 
   val dataFrames: DataFrames = new DataFrames(optionMap)
 
@@ -29,10 +31,7 @@ class TabDelimitedWithHeaderTrueAndQuotationDisabled extends AnyFlatSpec with Ma
       goodRecordTwo
     )
 
-    val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-    res.collectAsList().size() shouldEqual data.size
-    expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-    expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    dataFrames.assertions(header, data, sep, lineSep)
   }
 
   "When header true and quotes disabled and a known corrupt input" should "register only rows of unexpected length as corrupt records" in {
@@ -49,18 +48,24 @@ class TabDelimitedWithHeaderTrueAndQuotationDisabled extends AnyFlatSpec with Ma
       goodRecordThree
     )
 
-    val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-    res.collectAsList().size() shouldEqual data.size
-    expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-    expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    val (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath) = dataFrames.doProcess(header, data, sep, lineSep)
+    dataFrames.assertions(header, data, sep, lineSep)
   }
 
+  "When TabDelimitedWithHeaderTrueAndQuotationDisabled fail case" should "find reason and fix" in {
+    // not sure why this one failed before, or what changed since then ... ?
+    val (header, data) = dataFrames.makeInputFromFilePath("fail-cases/TabDelimitedWithHeaderTrueAndQuotationDisabled/unicode-15352673240399877164.txt", sep, lineSep)
+    dataFrames.assertions(header, data, sep, lineSep)
+  }
+
+  implicit val noShrinkA: Shrink[List[String]] = Shrink.shrinkAny
+  implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny
+
   "When header true and quotes disabled and an unknown input" should "register only rows of unexpected length as corrupt records" in {
-    forAll(nonEmptyListOfyUnicodeStrings(columnDelimiter), nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(columnDelimiter)) { (header: List[String], data: List[List[String]]) =>
-      val (res, expectedGoodRecordCount, expectedCorruptRecordCount) = dataFrames.doProcess(header, data, columnDelimiter, rowDelimiter)
-      res.collectAsList().size() shouldEqual data.size
-      expectedGoodRecordCount shouldEqual dataFrames.goodRecordCount(res)
-      expectedCorruptRecordCount shouldEqual dataFrames.corruptRecordCount(res)
+    forAll(nonEmptyListOfyUnicodeStrings(sep), nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(sep)) { (header: List[String], data: List[List[String]]) =>
+      whenever (!header.isEmpty && !data.isEmpty) {
+        dataFrames.assertions(header, data, sep, lineSep)
+      }
     }
   }
 }
