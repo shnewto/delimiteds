@@ -4,33 +4,56 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import java.io.{File, FileWriter}
 import java.util.UUID
-import scala.collection.mutable
 import scala.util.Random
 
 object DelimitedDataGen {
 
-  def nonEmptyUnicodeString(delimiter: String): Gen[String] = Arbitrary.arbString.arbitrary.suchThat(i => !i.isEmpty && i != delimiter)
+  val genMin = 1
+  val genMax = 20
 
-  def nonEmptyUnicodeStringWithNewlines(delimiter: String): Gen[String] = Gen.oneOf(
-    arbitraryStringWithNewlines(new scala.util.Random, delimiter),
-    nonEmptyUnicodeString(delimiter))
+  def nonEmptyUnicodeString(delimiter: String): Gen[String] = Gen.chooseNum(genMin, genMax)
+    .flatMap { n =>
+      Gen.buildableOfN[String, Char](n, Arbitrary.arbitrary[Char]).suchThat(i => !i.isEmpty && i != delimiter)
+    }
 
-  def arbitraryStringWithNewlines(r: scala.util.Random, delimiter: String): Gen[String] = {
-    Arbitrary.arbString.arbitrary.suchThat(i => !i.isEmpty && i != delimiter).flatMap(s => {
-    if (r.nextInt() % 5 == 0) s + "\n" else s
-    })
-  }
+  def nonEmptyUnicodeStringWithNewlines(delimiter: String): Gen[String] =
+    nonEmptyUnicodeString(delimiter).map(s => Random.shuffle((s + "\n\n").toSeq).mkString)
 
-  def intInRange(min: Int, max: Int): Gen[Int] = Gen.choose(min, max)
+  def nonEmptyUnicodeStringWithIrregularQuotations(delimiter: String): Gen[String] =
+    nonEmptyUnicodeString(delimiter).map(s => Random.shuffle((s + "\"").toSeq).mkString)
 
-  def nonEmptyListOfyUnicodeStrings(n: Int, delimiter: String): Gen[List[String]] = Gen.containerOfN[List, String](n, nonEmptyUnicodeString(delimiter))
+  def dataSize = Gen.chooseNum(genMin, genMax)
 
-  def nonEmptyListOfNonEmptyListOfyUnicodeStrings(n: Int, m: Int, delimiter: String): Gen[List[List[String]]] = Gen.containerOfN[List, List[String]](n, nonEmptyListOfyUnicodeStrings(m, delimiter))
+  def nonEmptyListOfyUnicodeStrings(delimiter: String): Gen[List[String]] = Gen.chooseNum(genMin, genMax)
+    .flatMap { n =>
+      Gen.buildableOfN[ List[String], String ](n, nonEmptyUnicodeString(delimiter))
+    }
 
-  def nonEmptyListOfyUnicodeStringsWithNewlines(n: Int, delimiter: String): Gen[List[String]] = Gen.containerOfN[List, String](n, nonEmptyUnicodeStringWithNewlines(delimiter))
+  def nonEmptyListOfyUnicodeStringsWithNewlines(delimiter: String) = Gen.chooseNum(genMin, genMax)
+    .flatMap { n =>
+      Gen.buildableOfN[ List[String], String ](n, nonEmptyUnicodeStringWithNewlines(delimiter))
+    }
 
-  def nonEmptyListOfNonEmptyListOfyUnicodeStringsWithNewlines(n: Int, m: Int, delimiter: String): Gen[List[List[String]]] = Gen.containerOfN[List, List[String]](n, nonEmptyListOfyUnicodeStringsWithNewlines(m, delimiter))
+  def nonEmptyListOfyUnicodeStringsWithIrregularQuotations(delimiter: String) = Gen.chooseNum(genMin, genMax)
+    .flatMap { n =>
+      Gen.buildableOfN[ List[String], String ](n, nonEmptyUnicodeStringWithIrregularQuotations(delimiter))
+    }
 
+
+  def nonEmptyListOfNonEmptyListsOfyUnicodeStrings(delimiter: String) = Gen.chooseNum(genMin, genMax)
+    .flatMap { n =>
+      Gen.buildableOfN[ List[List[String]], List[String] ](n, nonEmptyListOfyUnicodeStrings(delimiter))
+    }
+
+  def nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(delimiter: String) = Gen.chooseNum(genMin, genMax)
+    .flatMap { n =>
+      Gen.buildableOfN[ List[List[String]], List[String] ](n, nonEmptyListOfyUnicodeStringsWithNewlines(delimiter))
+    }
+
+  def nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(delimiter: String) = Gen.chooseNum(genMin, genMax)
+    .flatMap { n =>
+      Gen.buildableOfN[ List[List[String]], List[String] ](n, nonEmptyListOfyUnicodeStringsWithNewlines(delimiter))
+    }
 
   def createFileFromInputAndReturnPath(inputString: String): String = {
     val inputFile = File.createTempFile("unicode-", ".txt")
@@ -67,7 +90,7 @@ object DelimitedDataGen {
       r.mkString(columnDelimiter)
     )
 
-    val input = String.format("%s%s%s", distinct.mkString(columnDelimiter), rowDelimiter, rows.mkString(rowDelimiter));
+    val input = String.format("%s%s%s", (distinct ++ List("_corrupt_record")).mkString(columnDelimiter), rowDelimiter, rows.mkString(rowDelimiter));
     (input, recordQualityCount.goodRecordCount, recordQualityCount.corruptRecordCount)
   }
 }

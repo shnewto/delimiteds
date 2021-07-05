@@ -8,20 +8,14 @@ import scala.collection.immutable.HashMap
 
 object DelimitedFileProcessor extends HasSparkSession with App {
 
-  def process(path: String, schema: StructType, optionMap: Map[String, String]): DataFrame = {
-
-    val constantOptions = Map(
-      "columnNameOfCorruptRecord" -> "corrupt_record"
-    )
-
+  def process(path: String, optionMap: Map[String, String]): DataFrame = {
     sparkSession.read
-      .schema(schema.add("corrupt_record", "String"))
-      .options(constantOptions ++ optionMap)
+      .options(optionMap)
       .format("csv")
       .load(path)
   }
 
-  process("county-list.csv", new StructType, new HashMap)
+  process("county-list.csv", new HashMap)
 }
 
 trait HasSparkSession {
