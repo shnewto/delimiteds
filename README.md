@@ -3,7 +3,7 @@ Using property testing to feel out the input space of "delimited text file"
 
 ### Delimited Text File Tests
 
-#### [CommaDelimitedWithDataFrameReaderDefaults](src/test/scala/com/github/shnewto/CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults.scala) 
+#### [CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults](src/test/scala/com/github/shnewto/CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults.scala) 
 Tests for processing comma delimited files that should be handled well by Spark DataFrameReader defaults, 
 i.e. no multiline values in a record, no special chars to escape, no whitespace trimming, or
 date/timestamps to format. The first two tests in the file are illustrative, with handwritten datasets
@@ -21,7 +21,7 @@ checking that my abitrary string wasn't equal to the excluded chars instead of c
 it didn't contain them. This wasn't a bug in the "app" code, it was a bug in my assumptions... somthing
 that property tests are good at shining light on.
 
-#### [TabDelimitedWithMultiLineEnabled](src/test/scala/com/github/shnewto/TabDelimitedWithHeaderTrueAndMultiLineEnabled.scala)
+#### [TabDelimitedWithHeaderTrueMultiLineAndNestedDoubleQuotesEscapedEnabled](src/test/scala/com/github/shnewto/TabDelimitedWithHeaderTrueMultiLineAndNestedDoubleQuotesEscapedEnabled.scala)
 Tests for processing tab delimited files that should be handled well by Spark DataFrameReader when 
 multiline values in a record is set to true. The first two tests in the file are illustrative, 
 with handwritten datasets and assertions that can be kinda tracked visually. The last and third test 

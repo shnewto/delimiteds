@@ -9,7 +9,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 import scala.collection.immutable.HashMap
 
-class TabDelimitedWithHeaderTrueAndMultiLineEnabled extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
+class TabDelimitedWithHeaderTrueMultiLineAndNestedDoubleQuotesEscapedEnabled extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
   val sep = "\t"
   val lineSep = "\n"
 
