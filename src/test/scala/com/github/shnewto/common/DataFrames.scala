@@ -40,7 +40,7 @@ class DataFrames(optionMap: HashMap[String, String]) {
     res.cache().collectAsList().size() shouldEqual data.size
     expectedGoodRecordCount shouldEqual goodRecordCount(res)
     expectedCorruptRecordCount shouldEqual corruptRecordCount(res)
-        Files.deleteIfExists(Paths.get(inputPath))
+    Files.deleteIfExists(Paths.get(inputPath))
   }
 
   def createFileFromInputAndReturnPath(inputString: String): String = {
