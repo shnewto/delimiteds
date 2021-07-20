@@ -14,6 +14,8 @@ object DelimitedFileProcessor extends HasSparkSession with App {
       .load(path)
   }
 
+  // Estimates of the Components of Resident Population Change for Counties: April 1, 2010 to July 1, 2019
+  // https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/counties/totals/co-est2019-alldata.csv
   process("county-list.csv", new HashMap)
 }
 
