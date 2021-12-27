@@ -24,8 +24,12 @@ trait HasSparkSession {
   val appName = "delimiteds"
 
   val sparkSession = {
-    val conf = new SparkConf().setMaster(master).setAppName(appName).set("spark.sql.caseSensitive", "true")
-    SparkSession.builder()
+    val conf = new SparkConf()
+      .setMaster(master)
+      .setAppName(appName)
+      .set("spark.sql.caseSensitive", "true")
+    SparkSession
+      .builder()
       .config(conf)
       .getOrCreate()
   }

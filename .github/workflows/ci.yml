@@ -1,0 +1,60 @@
+name: CI
+on:
+  pull_request:
+  push:
+jobs:
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: setup JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: temurin
+        java-version: 8
+    - name: format
+      run: sbt -v scalafmtCheckAll
+
+  test-ubuntu-latest:
+    needs: [format]
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: setup JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: temurin
+        java-version: 8
+    - name: build and test
+      run: sbt -v +test
+
+  test-windows-latest:
+    needs: [format]
+    runs-on: windows-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: setup JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: temurin
+        java-version: 8
+    - name: build and test
+      run: sbt -v +test
+
+  test-macos-latest:
+    needs: [format]
+    runs-on: macos-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: setup JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: temurin
+        java-version: 8
+    - name: build and test
+      run: sbt -v +test
