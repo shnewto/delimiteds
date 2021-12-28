@@ -19,9 +19,17 @@ class DataFrames(optionMap: HashMap[String, String]) {
     val (input, expectedGoodRecordCount, expectedCorruptRecordCount) =
       makeInput(header, data, sep, lineSep)
     val inputPath = createFileFromInputAndReturnPath(input)
-    val res = DelimitedFileProcessor.process(inputPath.toAbsolutePath().toString(), optionMap)
+    val res = DelimitedFileProcessor.process(
+      inputPath.toAbsolutePath().toString(),
+      optionMap
+    )
     saveResults(inputPath, header, data, sep, lineSep)
-    (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath.toAbsolutePath().toString())
+    (
+      res,
+      expectedGoodRecordCount,
+      expectedCorruptRecordCount,
+      inputPath.toAbsolutePath().toString()
+    )
   }
 
   def makeInputFromFilePath(
@@ -119,7 +127,8 @@ class DataFrames(optionMap: HashMap[String, String]) {
       lineSep: String
   ) {
 
-    val fname = inputPath.getFileName.toString.split("\\.").dropRight(1).mkString;
+    val fname =
+      inputPath.getFileName.toString.split("\\.").dropRight(1).mkString;
     val dirPath = Paths.get(inputPath.getParent.toString, fname.toString)
     val headerFilePath = Paths.get(dirPath.toString, "header.txt")
     val dataFilePath = Paths.get(dirPath.toString, "data.txt")
