@@ -68,13 +68,17 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
   }
 
   val testParameters =
-    Table (
+    Table(
       ("header", "data", "goodRecordCount", "badRecordCount"),
       (
         List("Category", "Common Name", "Scientific Name"),
         List(
           List("Grass", "Pinegrass", "Calamagrostis rubescens"),
-          List("Low/Medium Shrubs", " Grouse Whortleberry", "Vaccinium scoparium")
+          List(
+            "Low/Medium Shrubs",
+            " Grouse Whortleberry",
+            "Vaccinium scoparium"
+          )
         ),
         Some(2),
         Some(0)
@@ -82,20 +86,40 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
       (
         List("Category", "Common Name", "Scientific Name"),
         List(
-          List("statewide prohibited genera","Cytisus","Genista","Spartium","Chameacytisus"),
-          List("statewide edrr list", "giant hogweed", "Heracleum mantegazzianum"),
+          List(
+            "statewide prohibited genera",
+            "Cytisus",
+            "Genista",
+            "Spartium",
+            "Chameacytisus"
+          ),
+          List(
+            "statewide edrr list",
+            "giant hogweed",
+            "Heracleum mantegazzianum"
+          ),
           List("statewide control list", "dyers woad", "Isatis tinctoria"),
-          List("statewide containment list", "yellow toadflax", "Linaria vulgaris")
+          List(
+            "statewide containment list",
+            "yellow toadflax",
+            "Linaria vulgaris"
+          )
         ),
         Some(3),
         Some(1)
       )
     )
 
-
   "When header true and otherwise default DataFrame reader options" should "register good records and corrupt records as expected" in {
-    forAll (testParameters) { (header, data, goodRecordCount, badRecordCount) =>
-      dataFrames.assertions(header, data, sep, lineSep, goodRecordCount, badRecordCount)
+    forAll(testParameters) { (header, data, goodRecordCount, badRecordCount) =>
+      dataFrames.assertions(
+        header,
+        data,
+        sep,
+        lineSep,
+        goodRecordCount,
+        badRecordCount
+      )
     }
   }
 

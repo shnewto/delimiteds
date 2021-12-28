@@ -67,8 +67,10 @@ class DataFrames(optionMap: HashMap[String, String]) {
       doProcess(header, data, sep, lineSep)
     res.cache().collectAsList().size() shouldEqual data.size
 
-    val expectGoodRecs = knownGoodRecordCount.getOrElse(inferredGoodRecordCount);
-    val expectBadRecs = knownBadRecordCount.getOrElse(inferredCorruptRecordCount);
+    val expectGoodRecs =
+      knownGoodRecordCount.getOrElse(inferredGoodRecordCount);
+    val expectBadRecs =
+      knownBadRecordCount.getOrElse(inferredCorruptRecordCount);
     expectGoodRecs shouldEqual goodRecordCount(res)
     expectBadRecs shouldEqual corruptRecordCount(res)
     Files.deleteIfExists(Paths.get(inputPath))
