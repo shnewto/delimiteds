@@ -59,13 +59,18 @@ class DataFrames(optionMap: HashMap[String, String]) {
       header: List[String],
       data: List[List[String]],
       sep: String,
-      lineSep: String
+      lineSep: String,
+      knownGoodRecordCount: Option[Int],
+      knownBadRecordCount: Option[Int]
   ): Unit = {
-    val (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath) =
+    val (res, inferredGoodRecordCount, inferredCorruptRecordCount, inputPath) =
       doProcess(header, data, sep, lineSep)
     res.cache().collectAsList().size() shouldEqual data.size
-    expectedGoodRecordCount shouldEqual goodRecordCount(res)
-    expectedCorruptRecordCount shouldEqual corruptRecordCount(res)
+
+    val expectGoodRecs = knownGoodRecordCount.getOrElse(inferredGoodRecordCount);
+    val expectBadRecs = knownBadRecordCount.getOrElse(inferredCorruptRecordCount);
+    expectGoodRecs shouldEqual goodRecordCount(res)
+    expectBadRecs shouldEqual corruptRecordCount(res)
     Files.deleteIfExists(Paths.get(inputPath))
   }
 

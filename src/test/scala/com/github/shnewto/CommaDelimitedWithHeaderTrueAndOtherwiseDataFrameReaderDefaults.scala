@@ -9,13 +9,16 @@ import org.scalacheck.Shrink
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import org.scalatest.prop.TableDrivenPropertyChecks.Table
 
 import scala.collection.immutable.HashMap
+import org.scalatest.prop.TableDrivenPropertyChecks
 
 class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
     extends AnyFlatSpec
     with Matchers
-    with ScalaCheckDrivenPropertyChecks {
+    with ScalaCheckDrivenPropertyChecks
+    with TableDrivenPropertyChecks {
   val sep = ","
   val lineSep = "\n"
 
@@ -35,7 +38,7 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
       goodRecordTwo
     )
 
-    dataFrames.assertions(header, data, sep, lineSep)
+    dataFrames.assertions(header, data, sep, lineSep, Some(2), Some(0))
   }
 
   "When header true and otherwise default DataFrame reader options and a known corrupt input" should "register only rows of unexpected length as corrupt records" in {
@@ -61,7 +64,39 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
       goodRecordThree
     )
 
-    dataFrames.assertions(header, data, sep, lineSep)
+    dataFrames.assertions(header, data, sep, lineSep, Some(3), Some(1))
+  }
+
+  val testParameters =
+    Table (
+      ("header", "data", "goodRecordCount", "badRecordCount"),
+      (
+        List("Category", "Common Name", "Scientific Name"),
+        List(
+          List("Grass", "Pinegrass", "Calamagrostis rubescens"),
+          List("Low/Medium Shrubs", " Grouse Whortleberry", "Vaccinium scoparium")
+        ),
+        Some(2),
+        Some(0)
+      ),
+      (
+        List("Category", "Common Name", "Scientific Name"),
+        List(
+          List("statewide prohibited genera","Cytisus","Genista","Spartium","Chameacytisus"),
+          List("statewide edrr list", "giant hogweed", "Heracleum mantegazzianum"),
+          List("statewide control list", "dyers woad", "Isatis tinctoria"),
+          List("statewide containment list", "yellow toadflax", "Linaria vulgaris")
+        ),
+        Some(3),
+        Some(1)
+      )
+    )
+
+
+  "When header true and otherwise default DataFrame reader options" should "register good records and corrupt records as expected" in {
+    forAll (testParameters) { (header, data, goodRecordCount, badRecordCount) =>
+      dataFrames.assertions(header, data, sep, lineSep, goodRecordCount, badRecordCount)
+    }
   }
 
 //  maybe make this configurable on run instead of comment/uncomment to debug
@@ -78,7 +113,7 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
       nonEmptyListOfyUnicodeStrings(sep, lineSep),
       nonEmptyListOfNonEmptyListsOfyUnicodeStrings(sep, lineSep)
     ) { (header: List[String], data: List[List[String]]) =>
-      dataFrames.assertions(header, data, sep, lineSep)
+      dataFrames.assertions(header, data, sep, lineSep, None, None)
     }
   }
 }

@@ -43,7 +43,7 @@ class TabDelimitedWithHeaderTrueAndQuotationDisabled
       goodRecordTwo
     )
 
-    dataFrames.assertions(header, data, sep, lineSep)
+    dataFrames.assertions(header, data, sep, lineSep, Some(2), Some(0))
   }
 
   "When header true and quotes disabled and a known corrupt input" should "register only rows of unexpected length as corrupt records" in {
@@ -77,7 +77,7 @@ class TabDelimitedWithHeaderTrueAndQuotationDisabled
 
     val (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath) =
       dataFrames.doProcess(header, data, sep, lineSep)
-    dataFrames.assertions(header, data, sep, lineSep)
+    dataFrames.assertions(header, data, sep, lineSep, Some(3), Some(1))
   }
 
 //  maybe make this configurable on run instead of comment/uncomment to debug
@@ -89,15 +89,15 @@ class TabDelimitedWithHeaderTrueAndQuotationDisabled
   implicit val noShrinkA: Shrink[List[String]] = Shrink.shrinkAny
   implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny
 
-  "When header true and quotes disabled and an unknown input" should "register only rows of unexpected length as corrupt records" in {
-    forAll(
-      nonEmptyListOfyUnicodeStrings(sep, lineSep),
-      nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(
-        sep,
-        lineSep
-      )
-    ) { (header: List[String], data: List[List[String]]) =>
-      dataFrames.assertions(header, data, sep, lineSep)
-    }
-  }
+  // "When header true and quotes disabled and an unknown input" should "register only rows of unexpected length as corrupt records" in {
+  //   forAll(
+  //     nonEmptyListOfyUnicodeStrings(sep, lineSep),
+  //     nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithIrregularQuotations(
+  //       sep,
+  //       lineSep
+  //     )
+  //   ) { (header: List[String], data: List[List[String]]) =>
+  //     dataFrames.assertions(header, data, sep, lineSep, None, None)
+  //   }
+  // }
 }
