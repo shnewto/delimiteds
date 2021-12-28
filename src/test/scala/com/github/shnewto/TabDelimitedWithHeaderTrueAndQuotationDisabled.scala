@@ -80,7 +80,7 @@ class TabDelimitedWithHeaderTrueAndQuotationDisabled
     dataFrames.assertions(header, data, sep, lineSep)
   }
 
-//  Could def make this a cleaner than comment/uncomment to debug
+//  maybe make this configurable on run instead of comment/uncomment to debug
 //  "When TabDelimitedWithHeaderTrueAndQuotationDisabled fail case" should "find reason and fix" in {
 //    val (header, data) = dataFrames.makeInputFromFilePath("fail-cases/TabDelimitedWithHeaderTrueAndQuotationDisabled/unicode-15352673240399877164.txt", sep, lineSep)
 //    dataFrames.assertions(header, data, sep, lineSep)

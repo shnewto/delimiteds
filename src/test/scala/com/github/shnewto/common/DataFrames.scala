@@ -5,7 +5,7 @@ import org.apache.spark.sql.DataFrame
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Paths, Path}
 import java.util.UUID
 import scala.collection.immutable.HashMap
 
@@ -19,9 +19,9 @@ class DataFrames(optionMap: HashMap[String, String]) {
     val (input, expectedGoodRecordCount, expectedCorruptRecordCount) =
       makeInput(header, data, sep, lineSep)
     val inputPath = createFileFromInputAndReturnPath(input)
-    val res = DelimitedFileProcessor.process(inputPath, optionMap)
+    val res = DelimitedFileProcessor.process(inputPath.toAbsolutePath().toString(), optionMap)
     saveResults(inputPath, header, data, sep, lineSep)
-    (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath)
+    (res, expectedGoodRecordCount, expectedCorruptRecordCount, inputPath.toAbsolutePath().toString())
   }
 
   def makeInputFromFilePath(
@@ -61,10 +61,10 @@ class DataFrames(optionMap: HashMap[String, String]) {
     Files.deleteIfExists(Paths.get(inputPath))
   }
 
-  def createFileFromInputAndReturnPath(inputString: String): String = {
+  def createFileFromInputAndReturnPath(inputString: String): Path = {
     val tempFile = Files.createTempFile("unicode-", ".txt")
     Files.write(tempFile, inputString.getBytes(StandardCharsets.UTF_8))
-    tempFile.toAbsolutePath.toString
+    tempFile.toAbsolutePath
   }
 
   def getHeaderFromInput(input: String): String = {
@@ -112,18 +112,17 @@ class DataFrames(optionMap: HashMap[String, String]) {
   }
 
   def saveResults(
-      inputPath: String,
+      inputPath: Path,
       header: List[String],
       data: List[List[String]],
       sep: String,
       lineSep: String
   ) {
-    val fname = inputPath.split("/").last.split("\\.").dropRight(1).mkString
-    val dirname = "/tmp/saved/" + fname
 
-    val dirPath = Paths.get(dirname)
-    val headerFilePath = Paths.get(dirname + "/header.txt")
-    val dataFilePath = Paths.get(dirname + "/data.txt")
+    val fname = inputPath.getFileName.toString.split("\\.").dropRight(1).mkString;
+    val dirPath = Paths.get(inputPath.getParent.toString, fname.toString)
+    val headerFilePath = Paths.get(dirPath.toString, "header.txt")
+    val dataFilePath = Paths.get(dirPath.toString, "data.txt")
 
     Files.createDirectories(dirPath)
     val headerFile = Files.createFile(headerFilePath)

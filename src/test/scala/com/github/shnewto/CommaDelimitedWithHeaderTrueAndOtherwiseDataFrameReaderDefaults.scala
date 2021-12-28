@@ -64,7 +64,7 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
     dataFrames.assertions(header, data, sep, lineSep)
   }
 
-//  Could def make this a cleaner than comment/uncomment to debug
+//  maybe make this configurable on run instead of comment/uncomment to debug
 //  "When CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults fail case" should "find reason and fix" in {
 //    val (header, data) = dataFrames.makeInputFromFilePath("fail-cases/CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults/unicode-6570456567733787155/unicode-6570456567733787155.txt", sep, lineSep)
 //    dataFrames.assertions(header, data, sep, lineSep)
