@@ -124,10 +124,11 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
   }
 
 //  maybe make this configurable on run instead of comment/uncomment to debug
-//  "When CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults fail case" should "find reason and fix" in {
-//    val (header, data) = dataFrames.makeInputFromFilePath("fail-cases/CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults/unicode-6570456567733787155/unicode-6570456567733787155.txt", sep, lineSep)
-//    dataFrames.assertions(header, data, sep, lineSep)
-//  }
+  "When fail case is run" should "find reason and fix" in {
+    val (header, data) =
+      dataFrames.makeInputFromFilePath("fail-cases/data.txt", sep, lineSep)
+    dataFrames.assertions(header, data, sep, lineSep, None, None)
+  }
 
   implicit val noShrinkA: Shrink[List[String]] = Shrink.shrinkAny
   implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny

@@ -82,12 +82,12 @@ class TabDelimitedWithHeaderTrueMultiLineAndNestedDoubleQuotesEscapedEnabled
   implicit val noShrinkA: Shrink[List[String]] = Shrink.shrinkAny
   implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny
 
-  // "When header true and multiline enabled and an unknown input" should "register only rows of unexpected length as corrupt records" in {
-  //   forAll(
-  //     nonEmptyListOfyUnicodeStrings(sep, lineSep),
-  //     nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(sep, lineSep)
-  //   ) { (header: List[String], data: List[List[String]]) =>
-  //     dataFrames.assertions(header, data, sep, lineSep, None, None)
-  //   }
-  // }
+  "When header true and multiline enabled and an unknown input" should "register only rows of unexpected length as corrupt records" in {
+    forAll(
+      nonEmptyListOfyUnicodeStrings(sep, lineSep),
+      nonEmptyListOfNonEmptyListsOfyUnicodeStringsWithNewlines(sep, lineSep)
+    ) { (header: List[String], data: List[List[String]]) =>
+      dataFrames.assertions(header, data, sep, lineSep, None, None)
+    }
+  }
 }
