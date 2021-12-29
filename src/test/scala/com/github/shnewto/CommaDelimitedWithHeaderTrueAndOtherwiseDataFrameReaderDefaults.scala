@@ -10,9 +10,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalatest.prop.TableDrivenPropertyChecks.Table
-
-import scala.collection.immutable.HashMap
 import org.scalatest.prop.TableDrivenPropertyChecks
+import scala.collection.immutable.HashMap
 
 class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
     extends AnyFlatSpec
@@ -123,12 +122,12 @@ class CommaDelimitedWithHeaderTrueAndOtherwiseDataFrameReaderDefaults
     }
   }
 
-//  maybe make this configurable on run instead of comment/uncomment to debug
-  "When fail case is run" should "find reason and fix" in {
-    val (header, data) =
-      dataFrames.makeInputFromFilePath("fail-cases/data.txt", sep, lineSep)
-    dataFrames.assertions(header, data, sep, lineSep, None, None)
-  }
+  //  maybe make this configurable on run instead of comment/uncomment to debug
+  // "When debug case is run" should "experiment with behavior" in {
+  //   val (header, data) =
+  //     dataFrames.makeInputFromFilePath("debug-cases/data.txt", sep, lineSep)
+  //   dataFrames.assertions(header, data, sep, lineSep, None, None)
+  // }
 
   implicit val noShrinkA: Shrink[List[String]] = Shrink.shrinkAny
   implicit val noShrinkB: Shrink[List[List[String]]] = Shrink.shrinkAny
