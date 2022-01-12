@@ -6,8 +6,8 @@ import scala.util.Random
 
 object DelimitedDataGen {
 
-  val genMin = 2
-  val genMax = 100
+  val genMin = 10
+  val genMax = 20
 
   def nonEmptyUnicodeString(sep: String, lineSep: String): Gen[String] =
     nonEmptyUnicodeStringExcludingSepAndLineSep(sep, lineSep)
